@@ -1,0 +1,170 @@
+openapi: 3.1.0
+info:
+  title: x402 DevEx Gateway API
+  version: 0.1.0
+  description: Minimal OpenAPI contract aligned with the current TypeScript scaffold.
+servers:
+  - url: http://localhost:3000
+paths:
+  /agent/task:
+    post:
+      summary: Submit an agent task
+      operationId: postAgentTask
+      tags: [Agent]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema:
+            type: string
+          description: Optional key reused on retries for idempotent behavior.
+        - in: header
+          name: X-Paid
+          required: false
+          schema:
+            type: string
+            enum: ['true']
+          description: Stub payment proof used by the scaffold.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentTaskRequest'
+      responses:
+        '200':
+          description: Paid path reached and task accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskPaidResponse'
+        '402':
+          description: Payment required for this resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequiredResponse'
+components:
+  schemas:
+    AgentTaskRequest:
+      type: object
+      additionalProperties: true
+      required: [task]
+      properties:
+        task:
+          type: string
+          minLength: 1
+          example: summarize this
+
+    AgentTaskPaidResponse:
+      type: object
+      additionalProperties: false
+      required: [status, result, receipt, idempotencyKey]
+      properties:
+        status:
+          type: string
+          enum: [accepted]
+        result:
+          type: object
+          additionalProperties: false
+          required: [taskId, message]
+          properties:
+            taskId:
+              type: string
+              example: task_stub_001
+            message:
+              type: string
+              example: Paid path reached. Task processing stub executed.
+        receipt:
+          type: object
+          additionalProperties: false
+          required:
+            - paid
+            - receiptId
+            - network
+            - txHash
+            - payer
+            - receiver
+            - amount
+            - paidAt
+          properties:
+            paid:
+              type: boolean
+              example: true
+            receiptId:
+              type: string
+              example: rcpt_stub_001
+            network:
+              type: string
+              example: base-sepolia
+            txHash:
+              type: string
+              example: 0xstub
+            payer:
+              type: string
+              example: 0xpayerstub
+            receiver:
+              type: string
+              example: demo-receiver-address
+            amount:
+              type: object
+              additionalProperties: false
+              required: [currency, value]
+              properties:
+                currency:
+                  type: string
+                  example: USD
+                value:
+                  type: string
+                  example: '0.01'
+            paidAt:
+              type: string
+              format: date-time
+        idempotencyKey:
+          type: [string, 'null']
+          example: demo-key-001
+
+    PaymentRequiredResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, x402]
+          properties:
+            code:
+              type: string
+              enum: [PAYMENT_REQUIRED, PAYMENT_UNDERPAID, POLICY_CAP_EXCEEDED, WALLET_FUNDING_FAILED]
+              example: PAYMENT_REQUIRED
+            message:
+              type: string
+              example: Payment required for this resource.
+            x402:
+              type: object
+              additionalProperties: true
+              required: [resourceId, amount, receiver, paymentHeader, retryHint]
+              properties:
+                resourceId:
+                  type: string
+                  example: agent-task
+                amount:
+                  type: object
+                  additionalProperties: false
+                  required: [currency, value]
+                  properties:
+                    currency:
+                      type: string
+                      example: USD
+                    value:
+                      type: string
+                      example: '0.01'
+                receiver:
+                  type: string
+                  example: demo-receiver-address
+                paymentHeader:
+                  type: string
+                  example: 'X-Paid: true'
+                retryHint:
+                  type: string

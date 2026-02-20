@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck-unit:
+    name: Lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: ./scripts/ci/install.sh
+
+      - name: Lint
+        run: ./scripts/ci/run-npm-script.sh lint
+
+      - name: Typecheck
+        run: ./scripts/ci/run-npm-script.sh typecheck
+
+      - name: Unit tests
+        run: ./scripts/ci/run-npm-script.sh test:unit
+
+  docs-example:
+    name: Docs example check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: ./scripts/ci/install.sh
+
+      - name: Verify docs example(s)
+        run: ./scripts/ci/run-npm-script.sh docs:check
+
+  integration:
+    name: Integration test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: ./scripts/ci/install.sh
+
+      - name: Integration tests
+        run: ./scripts/ci/run-npm-script.sh test:integration
+
+  quality-gate:
+    name: quality-gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - lint-typecheck-unit
+      - docs-example
+      - integration
+
+    steps:
+      - name: Enforce required CI checks
+        env:
+          LINT_RESULT: ${{ needs.lint-typecheck-unit.result }}
+          DOCS_RESULT: ${{ needs.docs-example.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+        run: |
+          echo "lint/typecheck/unit: $LINT_RESULT"
+          echo "docs example: $DOCS_RESULT"
+          echo "integration: $INTEGRATION_RESULT"
+
+          [[ "$LINT_RESULT" == "success" ]] || exit 1
+          [[ "$DOCS_RESULT" == "success" ]] || exit 1
+          [[ "$INTEGRATION_RESULT" == "success" ]] || exit 1
+
+          echo "All required quality checks passed."

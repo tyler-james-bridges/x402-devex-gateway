@@ -1,0 +1,25 @@
+# Build artifacts
+node_modules
+dist
+coverage
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# OS/editor noise
+.DS_Store
+.vscode/
+.idea/
+
+# Local scratch / private planning
+notes/
+memory/
+*.private.md
+*.local.md

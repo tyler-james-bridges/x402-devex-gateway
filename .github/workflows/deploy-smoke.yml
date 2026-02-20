@@ -1,0 +1,38 @@
+name: Deploy smoke (402 unpaid)
+
+on:
+  workflow_dispatch:
+    inputs:
+      smoke_url:
+        description: 'Gateway endpoint expected to return 402 for unpaid request'
+        required: true
+        type: string
+      smoke_method:
+        description: 'HTTP method (GET/POST/...)'
+        required: false
+        default: 'GET'
+        type: string
+  workflow_call:
+    inputs:
+      smoke_url:
+        required: true
+        type: string
+      smoke_method:
+        required: false
+        default: 'GET'
+        type: string
+
+jobs:
+  smoke-402:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run unpaid 402 smoke check
+        env:
+          SMOKE_URL: ${{ inputs.smoke_url }}
+          SMOKE_METHOD: ${{ inputs.smoke_method }}
+        run: ./scripts/deploy-smoke.sh
