@@ -34,6 +34,12 @@ paths:
       responses:
         '200':
           description: Paid path reached and task accepted.
+          headers:
+            Idempotency-Replayed:
+              description: "`true` when response is replayed from idempotency store; `false` on first successful request."
+              schema:
+                type: string
+                enum: ['true', 'false']
           content:
             application/json:
               schema:
@@ -44,6 +50,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaymentRequiredResponse'
+        '409':
+          description: Idempotency key conflict due to mismatched request payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdempotencyConflictResponse'
 components:
   schemas:
     AgentTaskRequest:
@@ -168,3 +180,22 @@ components:
                   example: 'X-Paid: true'
                 retryHint:
                   type: string
+                  example: Pay, then retry the same request with proof of payment.
+
+    IdempotencyConflictResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, idempotencyKey]
+          properties:
+            code:
+              type: string
+              enum: [IDEMPOTENCY_CONFLICT]
+            message:
+              type: string
+            idempotencyKey:
+              type: string

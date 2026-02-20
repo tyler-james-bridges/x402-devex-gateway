@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:unit": "node --import tsx --test test/unit/*.test.ts",
-    "test:integration": "npm run build && ./test/integration/unpaid-402.integration.sh",
+    "test:integration": "npm run build && node --import tsx --test test/integration/*.test.ts && ./test/integration/unpaid-402.integration.sh",
     "docs:check": "./scripts/docs-check.sh"
   },
   "dependencies": {
