@@ -2,7 +2,7 @@
 
 Canonical payment-path errors for the x402 gateway.
 
-> Note: current scaffold emits `PAYMENT_REQUIRED` only. Other codes below are recommended next-step defaults.
+> Note: scaffold now emits `PAYMENT_REQUIRED`, `POLICY_CAP_EXCEEDED`, and `WALLET_FUNDING_FAILED`. Other codes below remain recommended defaults.
 
 ## Error Envelope
 
