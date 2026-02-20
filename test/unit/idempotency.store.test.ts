@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getIdempotencyStore, resetIdempotencyStoreForTests } from "../../src/idempotency/store";
+import {
+  getIdempotencyStore,
+  resetIdempotencyStoreForTests,
+  sqliteBackendAvailable
+} from "../../src/idempotency/store";
 
-test("sqlite idempotency store persists and reads records", () => {
+test("sqlite idempotency store persists and reads records", { skip: !sqliteBackendAvailable() }, () => {
   process.env.IDEMPOTENCY_STORE = "sqlite";
   process.env.IDEMPOTENCY_SQLITE_PATH = ":memory:";
   resetIdempotencyStoreForTests();

@@ -1,5 +1,3 @@
-import { DatabaseSync } from "node:sqlite";
-
 export interface IdempotencyRecord {
   key: string;
   requestHash: string;
@@ -25,10 +23,26 @@ class MemoryIdempotencyStore implements IdempotencyStore {
   }
 }
 
+type DatabaseSyncLike = {
+  exec(sql: string): void;
+  prepare(sql: string): { get: (key: string) => unknown; run: (...args: unknown[]) => void };
+};
+
+function loadDatabaseSync(): new (path: string) => DatabaseSyncLike {
+  // node:sqlite exists on newer Node versions only.
+  // Keep sqlite backend optional so CI on Node 20 still works.
+  const sqlite = require("node:sqlite") as { DatabaseSync?: new (path: string) => DatabaseSyncLike };
+  if (!sqlite.DatabaseSync) {
+    throw new Error("sqlite backend unavailable on this Node version");
+  }
+  return sqlite.DatabaseSync;
+}
+
 class SqliteIdempotencyStore implements IdempotencyStore {
-  private readonly db: DatabaseSync;
+  private readonly db: DatabaseSyncLike;
 
   constructor(filePath: string) {
+    const DatabaseSync = loadDatabaseSync();
     this.db = new DatabaseSync(filePath);
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS idempotency_records (
@@ -89,6 +103,15 @@ class SqliteIdempotencyStore implements IdempotencyStore {
 }
 
 let store: IdempotencyStore | undefined;
+
+export function sqliteBackendAvailable(): boolean {
+  try {
+    loadDatabaseSync();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function getIdempotencyStore(): IdempotencyStore {
   if (store) {
