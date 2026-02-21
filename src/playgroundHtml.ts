@@ -6,89 +6,117 @@ export const playgroundHtml = `<!doctype html>
   <title>x402 DevEx Playground</title>
   <style>
     :root {
-      --bg: #070b16;
-      --card: #0e1428;
-      --card-2: #121a32;
-      --line: #223056;
-      --text: #e8efff;
-      --muted: #9eb0d8;
-      --brand: #7aa2ff;
-      --brand-2: #6fe0ff;
-      --ok: #33d39a;
-      --warn: #f3b35f;
-      --err: #ff6f86;
+      --bg: #060913;
+      --card: #0d1428cc;
+      --line: #243255;
+      --text: #e7eeff;
+      --muted: #9eb1dc;
+      --accent: #7aa2ff;
+      --accent2: #66e2ff;
+      --ok: #31d39b;
+      --warn: #f5b25e;
+      --err: #ff6f88;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background:
-        radial-gradient(900px 500px at 10% -15%, rgba(83,130,255,.22), transparent 50%),
-        radial-gradient(900px 500px at 95% 0%, rgba(86,220,255,.16), transparent 52%),
-        var(--bg);
+      min-height: 100vh;
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      min-height: 100vh;
+      background:
+        radial-gradient(900px 400px at 10% -10%, rgba(97,131,255,.2), transparent 50%),
+        radial-gradient(800px 420px at 100% 0%, rgba(84,215,255,.15), transparent 55%),
+        var(--bg);
       padding: 14px;
     }
 
     .app {
-      max-width: 760px;
+      width: min(760px, 100%);
       margin: 0 auto;
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 18px 60px rgba(0,0,0,.4);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, .45);
     }
 
-    .head {
+    .top {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 10px;
       padding: 12px;
       border-bottom: 1px solid var(--line);
-      background: rgba(10,16,34,.75);
+      background: #0b1225cc;
     }
 
-    .pill {
+    .chip {
       border: 1px solid var(--line);
       border-radius: 999px;
       padding: 6px 10px;
       font-size: 12px;
       color: var(--muted);
-      background: rgba(122,162,255,.08);
+      background: rgba(122,162,255,.1);
       white-space: nowrap;
     }
 
     .dot {
+      display: inline-block;
       width: 8px;
       height: 8px;
-      display: inline-block;
       border-radius: 999px;
       margin-right: 6px;
       background: var(--ok);
-      box-shadow: 0 0 12px rgba(51,211,154,.8);
+      box-shadow: 0 0 12px rgba(49,211,155,.8);
       vertical-align: middle;
     }
 
     .body { padding: 14px; }
 
     h1 {
-      margin: 2px 0 4px;
-      font-size: clamp(1.25rem, 5vw, 1.7rem);
-      line-height: 1.1;
+      margin: 0;
+      font-size: clamp(1.25rem, 5vw, 1.8rem);
       letter-spacing: -.02em;
     }
 
-    .sub { margin: 0 0 12px; color: var(--muted); }
+    .sub {
+      margin: 6px 0 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .seg button {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--muted);
+      background: #111a34;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .seg button.active {
+      color: #071125;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
 
     label {
       display: block;
+      margin: 9px 0 6px;
       font-size: 13px;
       color: var(--muted);
-      margin: 8px 0 6px;
     }
 
     input {
@@ -96,93 +124,97 @@ export const playgroundHtml = `<!doctype html>
       height: 46px;
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 0 12px;
-      background: var(--card-2);
+      background: #121b34;
       color: var(--text);
       font-size: 16px;
+      padding: 0 12px;
       outline: none;
     }
 
-    input:focus { border-color: var(--brand); }
+    input:focus { border-color: var(--accent); }
 
     .actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
       margin: 12px 0;
     }
 
-    button {
-      height: 44px;
-      border-radius: 11px;
-      border: 1px solid transparent;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--text);
-      background: #1a2443;
-    }
-
-    .primary {
+    .run {
+      height: 46px;
+      border: 0;
+      border-radius: 12px;
       color: #061127;
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
     }
 
     .ghost {
+      height: 46px;
+      min-width: 92px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
       color: var(--muted);
       background: transparent;
-      border-color: var(--line);
+      font-weight: 600;
+      cursor: pointer;
     }
-
-    .wide { grid-column: span 2; }
 
     .out {
       border: 1px solid var(--line);
       border-radius: 12px;
       overflow: hidden;
-      background: #0c1328;
+      background: #0b1328;
     }
 
-    .outbar {
+    .outhead {
       display: flex;
       justify-content: space-between;
-      padding: 10px 12px;
-      font-size: 12px;
-      color: var(--muted);
+      align-items: center;
+      padding: 9px 11px;
       border-bottom: 1px solid var(--line);
-      background: #0f1731;
+      color: var(--muted);
+      font-size: 12px;
+      background: #0e1732;
     }
 
     pre {
       margin: 0;
-      min-height: 190px;
-      max-height: 320px;
+      min-height: 180px;
+      max-height: 340px;
       overflow: auto;
-      padding: 12px;
+      padding: 11px;
       font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color: #d9e6ff;
+      color: #d9e5ff;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     @media (max-width: 520px) {
-      .head { padding: 10px; }
-      .body { padding: 12px; }
+      .top, .body { padding: 11px; }
       .actions { grid-template-columns: 1fr; }
-      .wide { grid-column: span 1; }
+      .ghost { width: 100%; }
     }
   </style>
 </head>
 <body>
   <main class="app">
-    <header class="head">
-      <div class="pill">⚡ x402 DevEx Playground</div>
-      <div class="pill"><span class="dot"></span>Local API</div>
+    <header class="top">
+      <div class="chip">⚡ x402 DevEx Playground</div>
+      <div class="chip"><span class="dot"></span>Local API</div>
     </header>
 
     <section class="body">
-      <h1>402 → pay → retry</h1>
-      <p class="sub">Quickly verify payment flow + idempotency behavior.</p>
+      <h1>Flow Runner</h1>
+      <p class="sub">Pick a mode, hit run, inspect response. No clutter.</p>
+
+      <div class="seg" role="tablist" aria-label="request mode">
+        <button id="mode-unpaid" class="active" data-mode="unpaid">Unpaid</button>
+        <button id="mode-paid" data-mode="paid">Paid</button>
+        <button id="mode-replay" data-mode="replay">Replay</button>
+      </div>
 
       <label>Task</label>
       <input id="task" value="summarize this repo" />
@@ -191,15 +223,12 @@ export const playgroundHtml = `<!doctype html>
       <input id="key" value="demo-key-001" />
 
       <div class="actions">
-        <button id="unpaid">Send unpaid</button>
-        <button id="paid" class="primary">Send paid</button>
-        <button id="replay">Retry paid</button>
+        <button id="run" class="run">Run request</button>
         <button id="newKey" class="ghost">New key</button>
-        <button id="clear" class="ghost wide">Clear log</button>
       </div>
 
       <div class="out">
-        <div class="outbar"><span>Response log</span><span id="status">Ready</span></div>
+        <div class="outhead"><span>Response log</span><span id="status">Ready</span></div>
         <pre id="out">Ready.</pre>
       </div>
     </section>
@@ -210,8 +239,11 @@ export const playgroundHtml = `<!doctype html>
     const status = document.getElementById('status');
     const task = document.getElementById('task');
     const key = document.getElementById('key');
+    const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
 
-    const tone = { ok: '#33d39a', warn: '#f3b35f', err: '#ff6f86', idle: '#9eb0d8' };
+    let mode = 'unpaid';
+
+    const tone = { ok: '#31d39b', warn: '#f5b25e', err: '#ff6f88', idle: '#9eb1dc' };
 
     function setStatus(text, t='idle') {
       status.textContent = text;
@@ -224,12 +256,22 @@ export const playgroundHtml = `<!doctype html>
       out.textContent = '[' + stamp() + ']\n' + payload + '\n\n' + out.textContent;
     }
 
-    async function send(paid) {
+    function selectMode(next) {
+      mode = next;
+      modeButtons.forEach((b) => b.classList.toggle('active', b.dataset.mode === next));
+      setStatus('Mode: ' + next, 'idle');
+    }
+
+    async function runRequest() {
       const headers = {
         'content-type': 'application/json',
         'Idempotency-Key': key.value.trim() || 'demo-key-001'
       };
-      if (paid) headers['X-Payment'] = 'v1:0.01:proof123';
+
+      const shouldPay = mode === 'paid' || mode === 'replay';
+      if (shouldPay) headers['X-Payment'] = 'v1:0.01:proof123';
+
+      if (mode === 'paid') key.value = 'demo-key-' + Math.floor(Math.random() * 1e6);
 
       setStatus('Requesting…', 'warn');
 
@@ -242,15 +284,14 @@ export const playgroundHtml = `<!doctype html>
       const body = await res.json().catch(() => ({}));
       const replayed = res.headers.get('Idempotency-Replayed');
       const t = res.status >= 500 ? 'err' : res.status >= 400 ? 'warn' : 'ok';
+
       setStatus('HTTP ' + res.status, t);
-      log(JSON.stringify({ status: res.status, replayed, body }, null, 2));
+      log(JSON.stringify({ mode, status: res.status, replayed, body }, null, 2));
     }
 
-    document.getElementById('unpaid').onclick = () => send(false).catch(e => { setStatus('Error', 'err'); log(String(e)); });
-    document.getElementById('paid').onclick = () => send(true).catch(e => { setStatus('Error', 'err'); log(String(e)); });
-    document.getElementById('replay').onclick = () => send(true).catch(e => { setStatus('Error', 'err'); log(String(e)); });
-    document.getElementById('newKey').onclick = () => { key.value = 'demo-key-' + Math.floor(Math.random()*1e6); setStatus('New key', 'ok'); };
-    document.getElementById('clear').onclick = () => { out.textContent = 'Cleared.'; setStatus('Ready'); };
+    modeButtons.forEach((b) => b.onclick = () => selectMode(b.dataset.mode));
+    document.getElementById('run').onclick = () => runRequest().catch((e) => { setStatus('Error', 'err'); log(String(e)); });
+    document.getElementById('newKey').onclick = () => { key.value = 'demo-key-' + Math.floor(Math.random() * 1e6); setStatus('New key', 'ok'); };
   </script>
 </body>
 </html>`;
