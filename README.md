@@ -83,6 +83,7 @@ See `.env.example`:
 - `X402_RECEIVER`
 - `IDEMPOTENCY_STORE` (`memory` or `sqlite`, default `memory`)
 - `IDEMPOTENCY_SQLITE_PATH` (sqlite database file path, default `:memory:`)
+- `PAYMENT_VERIFIER_MODE` (`strict` in beta defaults)
 - `WALLET_POLICY_*` guardrails (caps + allowlists)
 - `WALLET_FUNDING_*` scaffold controls for standardized funding errors
 
