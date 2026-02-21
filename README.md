@@ -1,5 +1,7 @@
 # x402-devex-gateway
 
+> **Status: beta-ready** for controlled internal dogfooding.
+
 Minimal Node + TypeScript scaffold for an x402-style paid API flow.
 
 ## Local run
@@ -103,7 +105,8 @@ See `.env.example`:
 ## Additional docs
 
 - `SECURITY.md`
+- `CHANGELOG.md`
 - `docs/error-catalog.md`
 - `docs/policy.md`
 - `docs/observability.md`
-- `PAYMENT_VERIFIER_MODE` (`stub` default, `strict` for format/amount enforcement)
+- `docs/reliability.md`
