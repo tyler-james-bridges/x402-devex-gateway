@@ -14,6 +14,8 @@ Service starts on `http://localhost:3000` by default.
 
 Visual tester: open `http://localhost:3000/playground` for a simple UI to run unpaid/paid/replay flows.
 
+Observability: `GET /metrics/summary` returns calls, paid calls, failure rate, and p95 latency over recent requests.
+
 ## API
 
 ### `POST /agent/task`
@@ -82,6 +84,8 @@ See `.env.example`:
 
 ## Additional docs
 
+- `SECURITY.md`
 - `docs/error-catalog.md`
 - `docs/policy.md`
+- `docs/observability.md`
 - `PAYMENT_VERIFIER_MODE` (`stub` default, `strict` for format/amount enforcement)

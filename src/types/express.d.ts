@@ -5,6 +5,7 @@ declare global {
     interface Request {
       x402Paid?: boolean;
       idempotencyKey?: string;
+      requestId?: string;
     }
   }
 }

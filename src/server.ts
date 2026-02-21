@@ -6,9 +6,11 @@ import { idempotencyReplayMiddleware } from "./middleware/idempotencyReplay";
 import { x402Middleware } from "./middleware/x402";
 import { evaluateWalletPolicy, loadWalletPolicyConfig } from "./policy";
 import { playgroundHtml } from "./playgroundHtml";
+import { metricsSummary, observabilityMiddleware } from "./observability";
 
 export const app = express();
 app.use(express.json());
+app.use(observabilityMiddleware);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
@@ -16,6 +18,10 @@ app.get("/health", (_req, res) => {
 
 app.get("/playground", (_req, res) => {
   res.type("html").send(playgroundHtml);
+});
+
+app.get("/metrics/summary", (_req, res) => {
+  res.json(metricsSummary());
 });
 
 app.post(
