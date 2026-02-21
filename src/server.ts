@@ -62,8 +62,12 @@ app.post(
   res.status(200).json({
     status: "accepted",
     result: {
-      taskId: "task_stub_001",
-      message: "Paid path reached. Task processing stub executed."
+      taskId: req.requestId ? `task_${req.requestId.slice(0, 8)}` : "task_stub",
+      message: "Task accepted by gateway. Replace this stub with your agent runtime.",
+      output: {
+        summary: "Demo result payload from x402-devex-gateway.",
+        nextAction: "Wire your real agent execution in src/server.ts handler."
+      }
     },
     receipt: {
       paid: req.x402Paid === true,

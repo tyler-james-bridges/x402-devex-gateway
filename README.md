@@ -12,6 +12,19 @@ npm run dev
 
 Service starts on `http://localhost:3000` by default.
 
+## 15-minute integration check
+
+With the server running, verify the full unpaid -> paid -> metrics path:
+
+```bash
+npm run quickstart:check -- http://localhost:3000
+```
+
+This validates:
+- unpaid call returns `402`
+- paid retry returns `200`
+- metrics endpoint is reachable
+
 Visual tester: open `http://localhost:3000/playground` for a simple UI to run unpaid/paid/replay flows.
 
 Observability: `GET /metrics/summary` returns calls, paid calls, failure rate, and p95 latency over recent requests.
