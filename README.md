@@ -16,6 +16,10 @@ Visual tester: open `http://localhost:3000/playground` for a simple UI to run un
 
 Observability: `GET /metrics/summary` returns calls, paid calls, failure rate, and p95 latency over recent requests.
 
+Reliability checks:
+- `npm run test:e2e` for unpaid/pay/retry/integration flows
+- `npm run test:soak -- http://localhost:3000 100` for quick load sanity (writes `tests/reliability-report.json`)
+
 ## API
 
 ### `POST /agent/task`
