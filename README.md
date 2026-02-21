@@ -12,6 +12,8 @@ npm run dev
 
 Service starts on `http://localhost:3000` by default.
 
+Visual tester: open `http://localhost:3000/playground` for a simple UI to run unpaid/paid/replay flows.
+
 ## API
 
 ### `POST /agent/task`

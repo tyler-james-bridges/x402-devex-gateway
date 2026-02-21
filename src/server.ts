@@ -5,12 +5,17 @@ import { idempotencyRecordMiddleware } from "./middleware/idempotencyRecord";
 import { idempotencyReplayMiddleware } from "./middleware/idempotencyReplay";
 import { x402Middleware } from "./middleware/x402";
 import { evaluateWalletPolicy, loadWalletPolicyConfig } from "./policy";
+import { playgroundHtml } from "./playgroundHtml";
 
 export const app = express();
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/playground", (_req, res) => {
+  res.type("html").send(playgroundHtml);
 });
 
 app.post(
