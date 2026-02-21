@@ -17,6 +17,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/playground", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
   res.type("html").send(playgroundHtml);
 });
 
