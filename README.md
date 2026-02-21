@@ -12,12 +12,12 @@ npm run dev
 
 Service starts on `http://localhost:3000` by default.
 
-## 15-minute integration check
+## Quickstart verify
 
 With the server running, verify the full unpaid -> paid -> metrics path:
 
 ```bash
-npm run quickstart:check -- http://localhost:3000
+npm run quickstart:verify -- http://localhost:3000
 ```
 
 This validates:

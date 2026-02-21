@@ -14,7 +14,7 @@
     "test:integration": "npm run build && node --import tsx --test test/integration/*.test.ts && ./test/integration/unpaid-402.integration.sh",
     "test:e2e": "npm run test:integration",
     "test:soak": "./scripts/soak-test.sh",
-    "quickstart:check": "./scripts/quickstart-check.sh",
+    "quickstart:verify": "./scripts/quickstart-check.sh",
     "docs:check": "./scripts/docs-check.sh"
   },
   "dependencies": {
