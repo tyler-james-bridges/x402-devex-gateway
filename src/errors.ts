@@ -14,6 +14,30 @@ export function sendPolicyCapExceeded(
   });
 }
 
+export function sendSessionCapExceeded(
+  res: Response,
+  details: {
+    policyId: string;
+    sessionCapUsd: number;
+    sessionSpentUsd: number;
+    requestAmountUsd: number;
+  }
+): void {
+  res.status(403).json({
+    error: {
+      code: "SESSION_CAP_EXCEEDED",
+      message: "This request would exceed the session spending cap.",
+      x402: {
+        policyId: details.policyId,
+        sessionCapUsd: String(details.sessionCapUsd),
+        sessionSpentUsd: String(details.sessionSpentUsd),
+        requestAmountUsd: String(details.requestAmountUsd),
+        currency: "USD"
+      }
+    }
+  });
+}
+
 export function sendWalletFundingFailed(
   res: Response,
   options: {

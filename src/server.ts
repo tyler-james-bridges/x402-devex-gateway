@@ -1,5 +1,6 @@
 import express from "express";
-import { sendPolicyCapExceeded, sendTaskFailed, sendTaskTimeout, sendWalletFundingFailed } from "./errors";
+import { sendPolicyCapExceeded, sendSessionCapExceeded, sendTaskFailed, sendTaskTimeout, sendWalletFundingFailed } from "./errors";
+import { getSpendStore } from "./spend/store";
 import { idempotencyKeyMiddleware } from "./middleware/idempotencyKey";
 import { idempotencyRecordMiddleware } from "./middleware/idempotencyRecord";
 import { idempotencyReplayMiddleware } from "./middleware/idempotencyReplay";
@@ -84,6 +85,24 @@ app.post(
       retryable: process.env.WALLET_FUNDING_RETRYABLE === "true"
     });
     return;
+  }
+
+  if (policyConfig.sessionCapUsd !== null) {
+    const spendStore = getSpendStore();
+    const spendResult = spendStore.trySpend(
+      policyConfig.policyId,
+      amountUsd,
+      policyConfig.sessionCapUsd
+    );
+    if (!spendResult.allowed) {
+      sendSessionCapExceeded(res, {
+        policyId: policyConfig.policyId,
+        sessionCapUsd: policyConfig.sessionCapUsd,
+        sessionSpentUsd: spendResult.previousTotal,
+        requestAmountUsd: amountUsd
+      });
+      return;
+    }
   }
 
   const taskId = req.requestId ? `task_${req.requestId.slice(0, 8)}` : `task_${Date.now()}`;

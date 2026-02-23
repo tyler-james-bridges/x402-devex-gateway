@@ -3,7 +3,7 @@
 Canonical payment-path errors for the x402 gateway.
 
 > Payment verification maps to `PaymentState` variants in `src/payments/states.ts` via `resolvePaymentState(rawProof, requiredUsd, provider)`.
-> Runtime-path errors include `TASK_TIMEOUT` and `TASK_FAILED` for execution failures after payment validation.
+> Common emitted codes include `PAYMENT_REQUIRED`, `POLICY_CAP_EXCEEDED`, `SESSION_CAP_EXCEEDED`, `WALLET_FUNDING_FAILED`, `TASK_TIMEOUT`, and `TASK_FAILED`.
 
 ## Error Envelope
 
@@ -72,6 +72,27 @@ Suggested details:
 ```
 
 Client action: do not blind-retry; lower scope or raise budget/policy.
+
+---
+
+## SESSION_CAP_EXCEEDED (session budget cap)
+
+**HTTP:** `403 Forbidden`
+**Meaning:** Accepting this request would push the aggregate session spend past the configured cap.
+
+Suggested details:
+
+```json
+{
+  "policyId": "default",
+  "sessionCapUsd": "5.00",
+  "sessionSpentUsd": "4.95",
+  "requestAmountUsd": "0.10",
+  "currency": "USD"
+}
+```
+
+Client action: do not blind-retry; wait for budget reset or raise session cap.
 
 ---
 
@@ -145,6 +166,7 @@ Client action: inspect `reason`; retry with a new `Idempotency-Key` if transient
 - `PAYMENT_REQUIRED`: retry **after** payment attached
 - `PAYMENT_UNDERPAID`: retry **after** top-up
 - `POLICY_CAP_EXCEEDED`: retry only after policy/budget change
+- `SESSION_CAP_EXCEEDED`: retry only after budget reset or cap increase
 - `WALLET_FUNDING_FAILED`: retry based on `retryable`
 - `TASK_TIMEOUT`: retry same idempotency key; consider raising `TASK_TIMEOUT_MS`
 - `TASK_FAILED`: retry with new idempotency key if error is transient

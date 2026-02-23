@@ -80,9 +80,8 @@ export function evaluateWalletPolicy(
     };
   }
 
-  if (config.sessionCapUsd !== null) {
-    // Scaffold only: no persistent/session spend tracking yet.
-  }
+  // Session cap enforcement is handled by the spend store in the request handler
+  // (see server.ts) after policy evaluation passes.
 
   const token = normalize(input.token);
   if (config.allowedTokens.length > 0 && token && !config.allowedTokens.includes(token)) {
