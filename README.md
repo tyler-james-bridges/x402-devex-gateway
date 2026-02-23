@@ -113,3 +113,6 @@ See `.env.example`:
 - `docs/policy.md`
 - `docs/observability.md`
 - `docs/reliability.md`
+- `docs/onboarding-runbook.md` — external onboarding (<15 min)
+- `docs/launch-checklist.md` — go/no-go gates for launch
+- `docs/support-sop.md` — triage, templates, escalation

@@ -24,7 +24,7 @@ Example response:
       "resourceId": "agent-task",
       "amount": { "currency": "USD", "value": "0.01" },
       "receiver": "demo-receiver-address",
-      "paymentHeader": "X-Paid: true",
+      "paymentHeader": "X-Payment: v1:<amount-usd>:<proof-id>",
       "retryHint": "Pay, then retry the same request with proof of payment."
     }
   }
@@ -37,7 +37,7 @@ Example response:
 curl -i -X POST http://localhost:3000/agent/task \
   -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: quickstart-001' \
-  -H 'X-Paid: true' \
+  -H 'X-Payment: v1:0.01:proof-quickstart-001' \
   -d '{"task":"summarize this"}'
 ```
 
@@ -61,7 +61,7 @@ Example success:
     "payer": "0xpayerstub",
     "receiver": "demo-receiver-address",
     "amount": { "currency": "USD", "value": "0.01" },
-    "paidAt": "2026-02-20T23:00:00.000Z"
+    "paidAt": "2026-02-21T00:00:00.000Z"
   },
   "idempotencyKey": "quickstart-001"
 }
@@ -71,7 +71,8 @@ Example success:
 
 - Reuse `Idempotency-Key` across retries for the same logical task.
 - Treat 402 as expected flow for unpaid calls.
-- In this scaffold, payment proof is stubbed as `X-Paid: true`.
+- Default verifier mode is `strict`: use `X-Payment: v1:<amount>:<proof-id>`.
+- For local-only testing, set `PAYMENT_VERIFIER_MODE=stub` in `.env` to accept any non-empty `X-Payment` value.
 
 ## 4) Next
 
