@@ -2,7 +2,20 @@
 
 Target: working x402 payment flow in **≤ 15 minutes**.
 
-Prerequisites: Node.js 18+, npm, curl, a terminal.
+Prerequisites: Node.js 18+, npm, curl, `jq`, a terminal.
+
+**Time budget:** Each step lists an expected duration. If you're past the cumulative checkpoint, see Troubleshooting at the bottom.
+
+| Step | Cumulative | Description |
+|------|-----------|-------------|
+| 1 | 3 min | Clone and install |
+| 2 | 4 min | Configure environment |
+| 3 | 5 min | Start the server |
+| 4 | 7 min | Try unpaid flow |
+| 5 | 9 min | Pay and retry |
+| 6 | 11 min | Verify idempotency |
+| 7 | 13 min | Check metrics/playground |
+| 8 | 14 min | Run automated verify |
 
 ---
 
@@ -130,6 +143,8 @@ You've completed the core x402 payment flow:
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
 | `EADDRINUSE` on startup | Port 3000 in use | Set `PORT=3001` in `.env` |
-| 402 on paid request | Wrong header format | Use `X-Payment: v1:0.01:proof123` (strict mode) |
+| `PAYMENT_PROOF_INVALID` on paid request | Header format wrong for strict mode | Use `X-Payment: v1:0.01:proof123` — note the `v1:` prefix |
+| 402 on paid request (other) | Amount below `X402_PRICE_USD` or missing header | Check amount matches `.env` price; check header name is `X-Payment` |
 | `MODULE_NOT_FOUND` | Missing install | Run `npm install` |
+| `jq: command not found` | jq not installed | Install jq or remove `| jq .` from curl commands |
 | Playground not loading | Cache issue | Hard-refresh or clear browser cache |

@@ -24,7 +24,12 @@ Incoming report
   │   NO → Check: node version, npm install, .env exists → P0 if env is correct
   │
   ├─ Is the 402→200 flow working?
-  │   NO → Check: PAYMENT_VERIFIER_MODE, X-Payment header format → P1
+  │   NO → Check error code in response:
+  │     ├─ PAYMENT_REQUIRED → X-Payment header missing entirely → P2 (user error)
+  │     ├─ PAYMENT_PROOF_INVALID → header format wrong for strict mode → P2 (user error)
+  │     │   Fix: use X-Payment: v1:<amount>:<proof-id> (see docs/error-catalog.md)
+  │     ├─ PAYMENT_UNDERPAID → amount too low → P2 (user error)
+  │     └─ Still 402 with correct header → P1 (possible regression)
   │
   ├─ Is idempotency working?
   │   NO → Check: Idempotency-Key header present, same body on retry → P1
@@ -99,6 +104,26 @@ Please check:
 3. The amount matches or exceeds `X402_PRICE_USD` in your .env
 
 See docs/error-catalog.md for error code details.
+```
+
+### Template: Malformed proof (PAYMENT_PROOF_INVALID)
+
+```
+The error code PAYMENT_PROOF_INVALID means the X-Payment header is present
+but doesn't match the expected format for strict mode.
+
+Required format:
+  X-Payment: v1:<amount-usd>:<proof-id>
+
+Common mistakes:
+  - Using a plain string like `X-Payment: local-proof-123` (that's stub mode format)
+  - Missing the `v1:` prefix
+  - Proof ID shorter than 6 characters
+
+Working example:
+  X-Payment: v1:0.01:proof123
+
+See docs/error-catalog.md → PAYMENT_PROOF_INVALID for full details.
 ```
 
 ### Template: Idempotency conflict (unexpected 409)

@@ -56,13 +56,15 @@ curl -i -X POST http://localhost:3000/agent/task \
 
 Expected: `HTTP/1.1 402 Payment Required` with x402 instructions.
 
-### Paid request example (stub/default)
+### Paid request example
+
+The default verifier mode is `strict` (set in `.env.example`). Payment headers must match `v1:<amount-usd>:<proof-id>`:
 
 ```bash
 curl -i -X POST http://localhost:3000/agent/task \
   -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: demo-key-001' \
-  -H 'X-Payment: local-proof-123' \
+  -H 'X-Payment: v1:0.01:proof123' \
   -d '{"task":"summarize this"}'
 ```
 
@@ -72,22 +74,11 @@ If the same request is retried with the same `Idempotency-Key`, response is repl
 
 If the key is reused with a different body, expected: `HTTP/1.1 409 Conflict`.
 
-### Paid request example (strict verifier)
+Strict mode error cases:
+- Malformed proof returns `402` + `PAYMENT_PROOF_INVALID`
+- Underpaid proof (e.g. `v1:0.001:proof123`) returns `402` + `PAYMENT_UNDERPAID`
 
-```bash
-PAYMENT_VERIFIER_MODE=strict npm run dev
-
-curl -i -X POST http://localhost:3000/agent/task \
-  -H 'Content-Type: application/json' \
-  -H 'Idempotency-Key: demo-key-001' \
-  -H 'X-Payment: v1:0.01:proof123' \
-  -d '{"task":"summarize this"}'
-```
-
-Strict mode requires `X-Payment` to match:
-- `v1:<amount-usd>:<proof-id>`
-- Example malformed proof returns `402` + `PAYMENT_PROOF_INVALID`
-- Example underpaid proof (e.g. `v1:0.001:proof123`) returns `402` + `PAYMENT_UNDERPAID`
+> To accept any non-empty `X-Payment` value for local-only testing, set `PAYMENT_VERIFIER_MODE=stub` in `.env`.
 
 ## Environment variables
 
