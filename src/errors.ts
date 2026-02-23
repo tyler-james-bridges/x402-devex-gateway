@@ -39,3 +39,33 @@ export function sendWalletFundingFailed(
     }
   });
 }
+
+export function sendTaskTimeout(
+  res: Response,
+  taskId: string,
+  timeoutMs: number
+): void {
+  res.status(504).json({
+    error: {
+      code: "TASK_TIMEOUT",
+      message: "Task execution exceeded the configured timeout.",
+      taskId,
+      timeoutMs
+    }
+  });
+}
+
+export function sendTaskFailed(
+  res: Response,
+  taskId: string,
+  reason: string
+): void {
+  res.status(502).json({
+    error: {
+      code: "TASK_FAILED",
+      message: "Task execution failed.",
+      taskId,
+      reason
+    }
+  });
+}

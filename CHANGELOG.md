@@ -2,6 +2,21 @@
 
 All notable changes to this project are tracked here.
 
+## [0.2.0-beta] - 2026-02-22
+
+### Added
+- Pluggable `TaskRuntime` interface with `StubRuntime` default backend (`src/runtime.ts`).
+- `withTimeout` wrapper using `Promise.race` for reliable timeout handling of non-cooperative runtimes.
+- `createRuntime` factory with configurable timeout via `TASK_TIMEOUT_MS` env var (default 30s).
+- `sendTaskTimeout` (504) and `sendTaskFailed` (502) structured error responses.
+- `POST /agent/task` now executes tasks through the runtime pipeline and maps results to HTTP 200/502/504.
+- Unit tests for StubRuntime, withTimeout (pass-through, timeout, failure), and HTTP response mapping.
+
+### Changed
+- Response `status` field changed from `"accepted"` to `"completed"` to reflect actual task execution.
+- Response `result` field now includes `output: { summary }` and `durationMs` instead of `message`.
+- Updated OpenAPI spec, JS client example, error catalog, and docs to match new response shape.
+
 ## [0.1.0-beta] - 2026-02-21
 
 ### Added

@@ -2,7 +2,7 @@
 
 Canonical payment-path errors for the x402 gateway.
 
-> Note: scaffold now emits `PAYMENT_REQUIRED`, `POLICY_CAP_EXCEEDED`, and `WALLET_FUNDING_FAILED`. Other codes below remain recommended defaults.
+> Note: scaffold now emits `PAYMENT_REQUIRED`, `POLICY_CAP_EXCEEDED`, `WALLET_FUNDING_FAILED`, `TASK_TIMEOUT`, and `TASK_FAILED`. Other codes below remain recommended defaults.
 
 ## Error Envelope
 
@@ -95,9 +95,55 @@ Client action:
 
 ---
 
+## TASK_TIMEOUT (execution timeout)
+
+**HTTP:** `504 Gateway Timeout`
+**Meaning:** Task execution exceeded the configured timeout (`TASK_TIMEOUT_MS`).
+
+Example response:
+
+```json
+{
+  "error": {
+    "code": "TASK_TIMEOUT",
+    "message": "Task execution exceeded the configured timeout.",
+    "taskId": "task_a1b2c3d4",
+    "timeoutMs": 30000
+  }
+}
+```
+
+Client action: retry with same `Idempotency-Key`; consider whether the task needs a longer timeout.
+
+---
+
+## TASK_FAILED (execution failure)
+
+**HTTP:** `502 Bad Gateway`
+**Meaning:** Task runtime encountered an unrecoverable error.
+
+Example response:
+
+```json
+{
+  "error": {
+    "code": "TASK_FAILED",
+    "message": "Task execution failed.",
+    "taskId": "task_a1b2c3d4",
+    "reason": "agent crashed"
+  }
+}
+```
+
+Client action: inspect `reason`; retry with a new `Idempotency-Key` if transient.
+
+---
+
 ## Retry Guidance
 
 - `PAYMENT_REQUIRED`: retry **after** payment attached
 - `PAYMENT_UNDERPAID`: retry **after** top-up
 - `POLICY_CAP_EXCEEDED`: retry only after policy/budget change
 - `WALLET_FUNDING_FAILED`: retry based on `retryable`
+- `TASK_TIMEOUT`: retry same idempotency key; consider raising `TASK_TIMEOUT_MS`
+- `TASK_FAILED`: retry with new idempotency key if error is transient

@@ -33,7 +33,7 @@ paths:
               $ref: '#/components/schemas/AgentTaskRequest'
       responses:
         '200':
-          description: Paid path reached and task accepted.
+          description: Paid path reached and task completed.
           headers:
             Idempotency-Replayed:
               description: "`true` when response is replayed from idempotency store; `false` on first successful request."
@@ -56,6 +56,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IdempotencyConflictResponse'
+        '502':
+          description: Task execution failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskFailedResponse'
+        '504':
+          description: Task execution timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskTimeoutResponse'
 components:
   schemas:
     AgentTaskRequest:
@@ -75,18 +87,26 @@ components:
       properties:
         status:
           type: string
-          enum: [accepted]
+          enum: [completed]
         result:
           type: object
           additionalProperties: false
-          required: [taskId, message]
+          required: [taskId, output, durationMs]
           properties:
             taskId:
               type: string
-              example: task_stub_001
-            message:
-              type: string
-              example: Paid path reached. Task processing stub executed.
+              example: task_a1b2c3d4
+            output:
+              type: object
+              additionalProperties: true
+              required: [summary]
+              properties:
+                summary:
+                  type: string
+                  example: Processed task: summarize this
+            durationMs:
+              type: number
+              example: 3
         receipt:
           type: object
           additionalProperties: false
@@ -199,3 +219,49 @@ components:
               type: string
             idempotencyKey:
               type: string
+
+    TaskTimeoutResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, taskId, timeoutMs]
+          properties:
+            code:
+              type: string
+              enum: [TASK_TIMEOUT]
+            message:
+              type: string
+              example: Task execution exceeded the configured timeout.
+            taskId:
+              type: string
+              example: task_a1b2c3d4
+            timeoutMs:
+              type: number
+              example: 30000
+
+    TaskFailedResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, taskId, reason]
+          properties:
+            code:
+              type: string
+              enum: [TASK_FAILED]
+            message:
+              type: string
+              example: Task execution failed.
+            taskId:
+              type: string
+              example: task_a1b2c3d4
+            reason:
+              type: string
+              example: agent crashed

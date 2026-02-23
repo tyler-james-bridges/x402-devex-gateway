@@ -54,6 +54,6 @@ test("accepted payment proof in strict mode returns 200", async () => {
     .send({ task: "hello" });
 
   assert.equal(res.status, 200);
-  assert.equal(res.body?.status, "accepted");
+  assert.equal(res.body?.status, "completed");
   assert.equal(res.body?.receipt?.paid, true);
 });

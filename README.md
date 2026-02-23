@@ -99,6 +99,7 @@ See `.env.example`:
 - `IDEMPOTENCY_STORE` (`memory` or `sqlite`, default `memory`)
 - `IDEMPOTENCY_SQLITE_PATH` (sqlite database file path, default `:memory:`)
 - `PAYMENT_VERIFIER_MODE` (`strict` in beta defaults)
+- `TASK_TIMEOUT_MS` (task execution timeout in ms, default `30000`)
 - `WALLET_POLICY_*` guardrails (caps + allowlists)
 - `WALLET_FUNDING_*` scaffold controls for standardized funding errors
 

@@ -47,14 +47,15 @@ Example success:
 
 ```json
 {
-  "status": "accepted",
+  "status": "completed",
   "result": {
-    "taskId": "task_stub_001",
-    "message": "Paid path reached. Task processing stub executed."
+    "taskId": "task_a1b2c3d4",
+    "output": { "summary": "Processed task: summarize this" },
+    "durationMs": 1
   },
   "receipt": {
     "paid": true,
-    "receiptId": "rcpt_stub_001",
+    "receiptId": "rcpt_a1b2c3d4",
     "network": "base-sepolia",
     "txHash": "0xstub",
     "payer": "0xpayerstub",

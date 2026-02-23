@@ -26,7 +26,7 @@ Verify the x402-gated happy path and idempotency behavior for `POST /agent/task`
 2. Retry with header `X-Paid: true`.
 3. Assert status `200`.
 4. Assert body includes:
-   - `status = accepted`
+   - `status = completed`
    - `result.taskId`
    - `receipt.paid = true`
    - `idempotencyKey` equals request key

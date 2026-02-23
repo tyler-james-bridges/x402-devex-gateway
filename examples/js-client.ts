@@ -19,8 +19,8 @@ type Unpaid402 = {
 };
 
 type Paid200 = {
-  status: 'accepted';
-  result: { taskId: string; message: string };
+  status: 'completed';
+  result: { taskId: string; output: { summary: string }; durationMs: number };
   receipt: {
     paid: boolean;
     receiptId: string;

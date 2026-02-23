@@ -1,5 +1,5 @@
 import express from "express";
-import { sendPolicyCapExceeded, sendWalletFundingFailed } from "./errors";
+import { sendPolicyCapExceeded, sendTaskFailed, sendTaskTimeout, sendWalletFundingFailed } from "./errors";
 import { idempotencyKeyMiddleware } from "./middleware/idempotencyKey";
 import { idempotencyRecordMiddleware } from "./middleware/idempotencyRecord";
 import { idempotencyReplayMiddleware } from "./middleware/idempotencyReplay";
@@ -7,10 +7,31 @@ import { x402Middleware } from "./middleware/x402";
 import { evaluateWalletPolicy, loadWalletPolicyConfig } from "./policy";
 import { playgroundHtml } from "./playgroundHtml";
 import { metricsSummary, observabilityMiddleware } from "./observability";
+import { createRuntime, type TaskRuntime } from "./runtime";
 
 export const app = express();
 app.use(express.json());
 app.use(observabilityMiddleware);
+
+/* ------------------------------------------------------------------ */
+/*  Runtime – replaceable for testing                                  */
+/* ------------------------------------------------------------------ */
+
+let _taskRuntime: TaskRuntime | undefined;
+
+export function getTaskRuntime(): TaskRuntime {
+  if (!_taskRuntime) _taskRuntime = createRuntime();
+  return _taskRuntime;
+}
+
+/** @internal Reset to default runtime (test-only). */
+export function _setTaskRuntime(runtime: TaskRuntime | undefined): void {
+  _taskRuntime = runtime;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Routes                                                             */
+/* ------------------------------------------------------------------ */
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
@@ -31,12 +52,12 @@ app.post(
   idempotencyReplayMiddleware,
   idempotencyRecordMiddleware,
   x402Middleware,
-  (req, res) => {
+  async (req, res) => {
   const now = new Date().toISOString();
   const policyConfig = loadWalletPolicyConfig();
   const amountUsd = Number(process.env.X402_PRICE_USD ?? "0.01");
 
-  const body = (req.body ?? {}) as { payment?: { token?: string; contract?: string } };
+  const body = (req.body ?? {}) as { task?: string; payment?: { token?: string; contract?: string } };
   const policyResult = evaluateWalletPolicy(
     {
       amountUsd,
@@ -60,19 +81,30 @@ app.post(
     return;
   }
 
+  const taskId = req.requestId ? `task_${req.requestId.slice(0, 8)}` : `task_${Date.now()}`;
+  const runtime = getTaskRuntime();
+  const taskResult = await runtime.execute({ task: body.task ?? "", requestId: taskId });
+
+  if (taskResult.status === "timeout") {
+    sendTaskTimeout(res, taskId, taskResult.timeoutMs);
+    return;
+  }
+
+  if (taskResult.status === "failed") {
+    sendTaskFailed(res, taskId, taskResult.error);
+    return;
+  }
+
   res.status(200).json({
-    status: "accepted",
+    status: "completed",
     result: {
-      taskId: req.requestId ? `task_${req.requestId.slice(0, 8)}` : "task_stub",
-      message: "Task accepted by gateway. Replace this stub with your agent runtime.",
-      output: {
-        summary: "Demo result payload from x402-devex-gateway.",
-        nextAction: "Wire your real agent execution in src/server.ts handler."
-      }
+      taskId,
+      output: taskResult.output,
+      durationMs: taskResult.durationMs,
     },
     receipt: {
       paid: req.x402Paid === true,
-      receiptId: "rcpt_stub_001",
+      receiptId: `rcpt_${taskId.replace("task_", "")}`,
       network: "base-sepolia",
       txHash: "0xstub",
       payer: "0xpayerstub",
