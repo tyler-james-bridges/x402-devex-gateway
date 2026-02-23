@@ -3,7 +3,9 @@ import { sendPolicyCapExceeded, sendTaskFailed, sendTaskTimeout, sendWalletFundi
 import { idempotencyKeyMiddleware } from "./middleware/idempotencyKey";
 import { idempotencyRecordMiddleware } from "./middleware/idempotencyRecord";
 import { idempotencyReplayMiddleware } from "./middleware/idempotencyReplay";
-import { x402Middleware } from "./middleware/x402";
+import { createX402Middleware, x402Middleware } from "./middleware/x402";
+import { loadGatewayConfig } from "./payments/config";
+import { createPaymentProvider } from "./payments/provider";
 import { evaluateWalletPolicy, loadWalletPolicyConfig } from "./policy";
 import { playgroundHtml } from "./playgroundHtml";
 import { metricsSummary, observabilityMiddleware } from "./observability";
@@ -51,6 +53,9 @@ app.post(
   idempotencyKeyMiddleware,
   idempotencyReplayMiddleware,
   idempotencyRecordMiddleware,
+  // x402 middleware reads env per-request so tests can toggle provider/flags
+  // between requests without restarting the server. In production, prefer
+  // createX402Middleware() with a pre-loaded GatewayConfig.
   x402Middleware,
   async (req, res) => {
   const now = new Date().toISOString();
@@ -118,6 +123,80 @@ app.post(
     idempotencyKey: req.idempotencyKey ?? null
   });
 });
+
+// Export factory for production use (config loaded once at startup)
+export function createConfiguredApp() {
+  const prodApp = express();
+  prodApp.use(express.json());
+  prodApp.use(observabilityMiddleware);
+
+  const gatewayConfig = loadGatewayConfig();
+  const provider = createPaymentProvider(gatewayConfig.provider, {
+    simulateInvalid: gatewayConfig.simulateInvalid,
+    simulateUnsettled: gatewayConfig.simulateUnsettled,
+  });
+
+  prodApp.get("/health", (_req, res) => res.json({ ok: true }));
+  prodApp.get("/playground", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store, max-age=0");
+    res.type("html").send(playgroundHtml);
+  });
+  prodApp.get("/metrics/summary", (_req, res) => res.json(metricsSummary()));
+
+  prodApp.post(
+    "/agent/task",
+    idempotencyKeyMiddleware,
+    idempotencyReplayMiddleware,
+    idempotencyRecordMiddleware,
+    createX402Middleware(gatewayConfig, provider),
+    (req, res) => {
+      const now = new Date().toISOString();
+      const policyConfig = loadWalletPolicyConfig();
+
+      const body = (req.body ?? {}) as { payment?: { token?: string; contract?: string } };
+      const policyResult = evaluateWalletPolicy(
+        { amountUsd: gatewayConfig.priceUsd, token: body.payment?.token, contract: body.payment?.contract },
+        policyConfig
+      );
+
+      if (!policyResult.ok) {
+        sendPolicyCapExceeded(res, policyResult.message, policyResult.details);
+        return;
+      }
+
+      const proof = req.x402Proof;
+      const settlement = req.x402Settlement;
+
+      res.status(200).json({
+        status: "accepted",
+        result: {
+          taskId: req.requestId ? `task_${req.requestId.slice(0, 8)}` : "task_stub",
+          message: "Task accepted by gateway. Replace this stub with your agent runtime.",
+          output: {
+            summary: "Demo result payload from x402-devex-gateway.",
+            nextAction: "Wire your real agent execution in src/server.ts handler."
+          }
+        },
+        receipt: {
+          paid: req.x402Paid === true,
+          receiptId: proof ? `rcpt_${proof.proofId}` : "rcpt_stub_001",
+          network: proof?.network ?? gatewayConfig.resourceId,
+          txHash: settlement?.txHash ?? "0xstub",
+          payer: "0xpayerstub",
+          receiver: gatewayConfig.receiver,
+          amount: {
+            currency: "USD",
+            value: proof ? proof.amountUsd.toString() : gatewayConfig.priceUsd.toString()
+          },
+          paidAt: settlement?.confirmedAt ?? now
+        },
+        idempotencyKey: req.idempotencyKey ?? null
+      });
+    }
+  );
+
+  return { app: prodApp, config: gatewayConfig, provider };
+}
 
 if (require.main === module) {
   const port = Number(process.env.PORT ?? 3000);

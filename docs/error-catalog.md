@@ -2,7 +2,8 @@
 
 Canonical payment-path errors for the x402 gateway.
 
-> Note: scaffold now emits `PAYMENT_REQUIRED`, `POLICY_CAP_EXCEEDED`, `WALLET_FUNDING_FAILED`, `TASK_TIMEOUT`, and `TASK_FAILED`. Other codes below remain recommended defaults.
+> Payment verification maps to `PaymentState` variants in `src/payments/states.ts` via `resolvePaymentState(rawProof, requiredUsd, provider)`.
+> Runtime-path errors include `TASK_TIMEOUT` and `TASK_FAILED` for execution failures after payment validation.
 
 ## Error Envelope
 
